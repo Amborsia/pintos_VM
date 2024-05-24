@@ -147,11 +147,10 @@ fabric.properties
 *.lds.s
 *.bin
 *.dsk
-*.txt
 *.log
 
 userprog/build/
-thread/build/
+threads/build/
 vm/build/
 
 results
