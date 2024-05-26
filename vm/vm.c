@@ -172,6 +172,7 @@ vm_get_frame(void)
 static void
 vm_stack_growth(void *addr UNUSED)
 {
+	vm_alloc_page(VM_ANON, pg_round_down(addr), 1);
 }
 
 /* Handle the fault on write_protected page */
@@ -186,19 +187,24 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
 {
 	struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
 	struct page *page = NULL;
-	if (addr == NULL || is_kernel_vaddr(addr))
+	void *rsp;
+	if (addr == NULL || is_kernel_vaddr(addr) || !not_present)
 	{
 		return false;
 	}
+	if (addr >= USER_STACK_MIN && (addr >= f->rsp || addr == f->rsp - 8))
+	{
+		vm_stack_growth(addr); // 스택 성장을 처리
+	}
+
 	page = spt_find_page(spt, addr);
-	if (page)
-	{
-		return vm_do_claim_page(page);
-	}
-	else
+
+	if (!page || (write && !page->writable))
 	{
 		return false;
 	}
+
+	return vm_do_claim_page(page);
 }
 
 /* Free the page.

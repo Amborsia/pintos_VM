@@ -82,7 +82,7 @@ struct page_operations
 	void (*destroy)(struct page *);
 	enum vm_type type;
 };
-
+#define USER_STACK_MIN (USER_STACK - (1 << 20))
 #define swap_in(page, v) (page)->operations->swap_in((page), v)
 #define swap_out(page) (page)->operations->swap_out(page)
 #define destroy(page)                \
